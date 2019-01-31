@@ -25,7 +25,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author scarr
  */
-@Component(name = "MvnCofferServlet", configurationPolicy = ConfigurationPolicy.REQUIRE,
+@Component(name = "MvnCofferServlet", 
+        configurationPolicy = ConfigurationPolicy.REQUIRE,
         service = { HttpServlet.class }, 
         property = {"name=MvnCofferServlet", "alias=/coffer"})
 public class MvnCofferServlet extends HttpServlet {

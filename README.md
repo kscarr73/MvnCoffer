@@ -15,7 +15,7 @@ Installation
 ============
 
 ```
-install mvn:com.progbits.mvn/MvnCoffer/1.0.3
+install mvn:com.progbits.mvn/MvnCoffer/1.0.4
 ```
 
 Configuration
