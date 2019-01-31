@@ -4,7 +4,7 @@
 
     <groupId>com.progbits.mvn</groupId>
     <artifactId>MvnCoffer</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <packaging>bundle</packaging>
 
     <name>Maven Coffer - Mvn Repo</name>
@@ -17,7 +17,7 @@
 
     <distributionManagement>
         <repository>
-            <id>archiva.internal</id>
+            <id>internal.repo</id>
             <name>Internal Release Repository</name>
             <url>${mvnRepo}</url>
         </repository>
