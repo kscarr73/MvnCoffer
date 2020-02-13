@@ -4,7 +4,7 @@
 
     <groupId>com.progbits.mvn</groupId>
     <artifactId>MvnCoffer</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <packaging>bundle</packaging>
 
     <name>Maven Coffer - Mvn Repo</name>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.14.3</version>
+            <version>7.1.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.30</version>
         </dependency>
     </dependencies>
 
@@ -57,7 +57,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>4.1.0</version>
+                <version>4.2.1</version>
                 <extensions>true</extensions>
 
                 <configuration>

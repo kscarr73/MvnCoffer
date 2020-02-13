@@ -216,7 +216,7 @@ public class MvnCofferServlet extends HttpServlet {
             InputStream is;
 
             resp.setContentType(Files.probeContentType(fSet));
-            resp.setContentLength(new Long(Files.size(fSet)).intValue());
+            resp.setContentLength(Long.valueOf(Files.size(fSet)).intValue());
 
             Files.copy(fSet, resp.getOutputStream());
         }
