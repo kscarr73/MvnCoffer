@@ -128,7 +128,7 @@ public class MvnCofferServlet extends HttpServlet {
         String[] sSplitPaths = strLoc.split("/");
 
         if (lu.hasRole(sSplitPaths[1] + "_WRITE")) {
-            if ((strLoc.contains(".jar") || strLoc.contains(".pom")) && Files.exists(fSet)) {
+            if (!strLoc.endsWith("-javadoc.jar") && (strLoc.contains(".jar") || strLoc.contains(".pom")) && Files.exists(fSet)) {
                 resp.sendError(409, "Overwriting Release Not Allowed");
             } else {
                 Files.createDirectories(fSet.getParent());
