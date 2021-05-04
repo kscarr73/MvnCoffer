@@ -128,9 +128,13 @@ public class MvnCofferServlet extends HttpServlet {
         String[] sSplitPaths = strLoc.split("/");
 
         if (lu.hasRole(sSplitPaths[1] + "_WRITE")) {
-            if (!strLoc.endsWith("-javadoc.jar") && (strLoc.contains(".jar") || strLoc.contains(".pom")) && Files.exists(fSet)) {
+            if (!strLoc.contains(".xml") && Files.exists(fSet)) {
                 resp.sendError(409, "Overwriting Release Not Allowed");
             } else {
+				if (strLoc.contains("maven-metadata.xml") && Files.exists(fSet)) {
+					Files.delete(fSet);
+				}
+				
                 Files.createDirectories(fSet.getParent());
 
                 Files.copy(req.getInputStream(), fSet);
@@ -142,7 +146,7 @@ public class MvnCofferServlet extends HttpServlet {
         }
 
     }
-
+	
     private LoginUser authorizeUser(String auth) {
         String[] authSplit = auth.split(" ");
 
@@ -181,6 +185,8 @@ public class MvnCofferServlet extends HttpServlet {
         } else if (Files.isDirectory(fSet)) {
             String strFullReq = req.getRequestURL().toString();
 
+            strFullReq.replace("http:", "https:");
+            
             if (!strFullReq.endsWith("/")) {
                 strFullReq += "/";
             }
