@@ -88,8 +88,9 @@ public class MvnCofferServlet extends HttpServlet {
 
         switch (req.getMethod()) {
             case "GET":
+            case "HEAD":
                 if (req.getPathInfo().startsWith("/repository")) {
-                    processRepoGet(req, resp);
+                    processRepoGetHead(req, resp);
                 }
                 break;
 
@@ -170,7 +171,7 @@ public class MvnCofferServlet extends HttpServlet {
         }
     }
 
-    private void processRepoGet(HttpServletRequest req, HttpServletResponse resp)
+    private void processRepoGetHead(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String strLoc = req.getPathInfo().replace("/repository", "");
 
@@ -182,10 +183,10 @@ public class MvnCofferServlet extends HttpServlet {
         if (Files.notExists(fSet)) {
             _log.error("File " + strLoc + " was not found");
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "File " + strLoc + " was not found");
-        } else if (Files.isDirectory(fSet)) {
+        } else if (Files.isDirectory(fSet) && !"HEAD".equals(req.getMethod())) {
             String strFullReq = req.getRequestURL().toString();
 
-            strFullReq.replace("http:", "https:");
+            //strFullReq.replace("http:", "https:");
             
             if (!strFullReq.endsWith("/")) {
                 strFullReq += "/";
@@ -224,7 +225,9 @@ public class MvnCofferServlet extends HttpServlet {
             resp.setContentType(Files.probeContentType(fSet));
             resp.setContentLength(Long.valueOf(Files.size(fSet)).intValue());
 
-            Files.copy(fSet, resp.getOutputStream());
+            if ("GET".equals(req.getMethod())) {
+                Files.copy(fSet, resp.getOutputStream());
+            }
         }
     }
 
