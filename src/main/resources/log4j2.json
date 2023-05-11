@@ -1,0 +1,38 @@
+{
+    "configuration": {
+        "status": "error",
+        "name": "Log4j2JSONConfig",
+        "appenders": {
+            "Console": [
+                {
+                    "name": "Console_Appender",
+                    "JsonTemplateLayout": {
+                        "eventTemplateUri": "classpath:layouts/EcsLayout.json"
+                    }
+                },
+                {
+                    "name": "Access_Appender",
+                    "JsonTemplateLayout": {
+                        "eventTemplateUri": "classpath:layouts/AccessLayout.json"
+                    }
+                }
+            ]
+        },
+        "loggers": {
+            "root": {
+                "level": "info",
+                "AppenderRef": {
+                    "ref": "Console_Appender"
+                }
+            },
+            "Logger": {
+                "name": "com.progbits.mvn.coffer.AccessLog4jFeature",
+                "level": "info",
+                "additivity": "false",
+                "AppenderRef": {
+                    "ref": "Access_Appender"
+                }
+            }
+        }
+    }
+}

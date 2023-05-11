@@ -1,0 +1,57 @@
+{
+    "clientip": {
+        "$resolver": "map",
+        "key": "clientip"
+    },
+    "status": {
+        "$resolver": "map",
+        "key": "status"
+    },
+    "length": {
+        "$resolver": "map",
+        "key": "length"
+    },
+    "requestUri": {
+        "$resolver": "map",
+        "key": "requestUri"
+    },
+    "speed": {
+        "$resolver": "map",
+        "key": "speed"
+    },
+    "timestamp": {
+        "$resolver": "timestamp",
+        "epoch": {
+            "unit": "secs",
+            "rounded": true
+        }
+    },
+    "reqhost": {
+        "$resolver": "map",
+        "key": "reqhost"
+    },
+    "reqproto": {
+        "$resolver": "map",
+        "key": "reqproto"
+    },
+    "request": {
+        "$resolver": "map",
+        "key": "request"
+    },
+    "sourceip": {
+        "$resolver": "map",
+        "key": "sourceip"
+    },
+    "useragent": {
+        "$resolver": "map",
+        "key": "hdr_User-Agent"
+    },
+    "flowid": {
+        "$resolver": "mdc",
+        "key": "flowid"
+    },
+    "headers": {
+        "$resolver": "map",
+        "pattern": "hdr_.*" 
+    }
+}
