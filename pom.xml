@@ -38,12 +38,6 @@
         </dependency>
         
         <dependency>
-            <groupId>io.helidon.nima</groupId>
-            <artifactId>helidon-nima</artifactId>
-            <version>4.0.0-ALPHA6</version>
-        </dependency>
-        
-        <dependency>
             <groupId>io.helidon.nima.webserver</groupId>
             <artifactId>helidon-nima-webserver</artifactId>
             <version>4.0.0-ALPHA6</version>
@@ -67,11 +61,6 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
             <version>2.20.0</version>
         </dependency>
         <dependency>

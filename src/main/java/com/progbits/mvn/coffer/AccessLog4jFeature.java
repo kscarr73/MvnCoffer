@@ -30,30 +30,27 @@ public class AccessLog4jFeature implements HttpFeature, Weighted {
     Thread msgThread;
 
     public AccessLog4jFeature() {
-
+        init();
     }
 
     public AccessLog4jFeature(String ignoreRegEx) {
         if (ignoreRegEx != null) {
             _ignoreRegEx = Pattern.compile(ignoreRegEx);
         }
+
+        init();
     }
 
     private void init() {
         Runnable msgTask = () -> {
             while (true) {
-                MapMessage msg = logMessages.poll();
+                try {
+                    MapMessage msg = logMessages.take();
 
-                if (msg != null) {
                     log.info(msg);
-                } else {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ie)  {
-                        // nothing really to do here
-                    }
+                } catch (InterruptedException ie) {
+                    // nothing really to do here
                 }
-
             }
         };
 
