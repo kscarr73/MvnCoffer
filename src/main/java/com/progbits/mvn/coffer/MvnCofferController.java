@@ -219,6 +219,8 @@ public class MvnCofferController implements HttpService {
                 if ("GET".equals(req.prologue().method().text())) {
                     Files.copy(fSet, resp.outputStream());
                     resp.send();
+                } else if ("HEAD".equals(req.prologue().method().text())) {
+                    resp.send();
                 }
             }
         } catch (IOException io) {
