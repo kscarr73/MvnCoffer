@@ -213,18 +213,25 @@ public class MvnCofferController implements HttpService {
                     resp.send(sb.toString());
                 }
             } else {
-                resp.header("Content-Type", Files.probeContentType(fSet));
+                String contentType = Files.probeContentType(fSet);
+                
+                if (contentType == null) {
+                    contentType = "plain/text";
+                }
+                
+                resp.header("Content-Type", contentType);
                 resp.contentLength(Long.valueOf(Files.size(fSet)).intValue());
 
                 if ("GET".equals(req.prologue().method().text())) {
                     Files.copy(fSet, resp.outputStream());
-                    resp.send();
+                    
+                    resp.outputStream().close();
                 } else if ("HEAD".equals(req.prologue().method().text())) {
                     resp.send();
                 }
             }
         } catch (IOException io) {
-
+            // Nothing to do here
         }
     }
 
