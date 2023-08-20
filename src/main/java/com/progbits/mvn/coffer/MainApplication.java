@@ -1,25 +1,33 @@
 package com.progbits.mvn.coffer;
 
-import io.helidon.nima.webserver.WebServer;
-import io.helidon.nima.webserver.http.HttpRouting;
+import com.progbits.jetty.embedded.JettyEmbedded;
+import com.progbits.jetty.embedded.router.ServletRouter;
 
 public class MainApplication {
 
     public static void main(String[] args) {
         Integer webPort = 8080;
-        
+
         if (System.getenv("PORT") != null) {
             webPort = Integer.valueOf(System.getenv("PORT"));
         }
+
+        ServletRouter routes = new ServletRouter();
+
+        routes.addServletController(new MvnCofferController());
         
-        WebServer ws = WebServer.builder()
-                .port(webPort)
-                .routing(MainApplication::routing)
-                .start();
+        try {
+            JettyEmbedded.builder()
+                    .setPort(webPort)
+                    .setContextPath("/coffer")
+                    .useVirtualThreads()
+                    .useServletRoutes(routes)
+                    .build()
+                    .waitForInterrupt();
+        } catch (InterruptedException iex) {
+            // Nothing to do here
+        }
+
     }
 
-    static void routing(HttpRouting.Builder rules) {
-        rules.addFeature(new AccessLog4jFeature());
-        rules.register("/", new MvnCofferController());
-    }
 }

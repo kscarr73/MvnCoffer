@@ -4,7 +4,7 @@
 
     <groupId>com.progbits.mvn</groupId>
     <artifactId>MvnCoffer</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <packaging>jar</packaging>
 
     <name>Maven Coffer - Mvn Repo</name>
@@ -32,56 +32,9 @@
         </dependency>
         
         <dependency>
-            <groupId>io.helidon.nima</groupId>
-            <artifactId>helidon-nima</artifactId>
-            <version>4.0.0-ALPHA6</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>io.helidon.nima.webserver</groupId>
-            <artifactId>helidon-nima-webserver</artifactId>
-            <version>4.0.0-ALPHA6</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>io.helidon.logging</groupId>
-            <artifactId>helidon-logging-log4j</artifactId>
-            <version>4.0.0-ALPHA6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
-            <version>2.20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-layout-template-json</artifactId>
-            <version>2.20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.15.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.15.0</version>
+            <groupId>com.progbits.jetty.router</groupId>
+            <artifactId>JettyServletRouter</artifactId>
+            <version>1.0.6</version>
         </dependency>
         <dependency>
             <groupId>com.lmax</groupId>

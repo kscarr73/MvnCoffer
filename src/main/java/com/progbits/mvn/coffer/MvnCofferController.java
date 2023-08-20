@@ -1,11 +1,12 @@
 package com.progbits.mvn.coffer;
 
-import io.helidon.common.http.Http;
-import io.helidon.nima.webserver.http.HttpRules;
-import io.helidon.nima.webserver.http.HttpService;
-import io.helidon.nima.webserver.http.ServerRequest;
-import io.helidon.nima.webserver.http.ServerResponse;
+import com.progbits.jetty.embedded.router.JettyEmbeddedRequest;
+import com.progbits.jetty.embedded.router.JettyEmbeddedResponse;
+import com.progbits.jetty.embedded.router.ServletRouter;
+import com.progbits.jetty.embedded.servlet.ServletController;
+import com.progbits.jetty.embedded.util.HttpReqHelper;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,12 +22,13 @@ import org.apache.logging.log4j.Logger;
  *
  * @author scarr
  */
-public class MvnCofferController implements HttpService {
+public class MvnCofferController implements ServletController {
 
     private Logger _log = LogManager.getLogger(MvnCofferController.class);
 
     private static final String ALIAS = "/coffer/repository";
-    
+    private static final String ALIAS_PATH = "/coffer/repository${fileLoc}";
+
     private Map<String, LoginUser> _users = new HashMap<>();
 
     private String _storePath = System.getProperty("karaf.base") + "/data/coffer";
@@ -41,8 +43,7 @@ public class MvnCofferController implements HttpService {
     }
 
     public MvnCofferController() {
-        update();
-        init();
+        
     }
 
     private void update() {
@@ -59,7 +60,10 @@ public class MvnCofferController implements HttpService {
         }
     }
 
-    private void init() {
+    @Override
+    public void init() {
+        update();
+        
         // Create the directory if it is not there
         _storage = Paths.get(_storePath);
 
@@ -73,36 +77,37 @@ public class MvnCofferController implements HttpService {
     }
 
     @Override
-    public void routing(HttpRules httpRules) {
-        httpRules
-                .get("/coffer/healthcheck", this::healthCheck)
-                .head(ALIAS + "*", this::processRepoGetHead)
-                .get(ALIAS + "*", this::processRepoGetHead)
-                .post(ALIAS + "*", this::processRepoSave)
-                .put(ALIAS + "*", this::processRepoSave);
+    public void routes(ServletRouter route) {
+        route.get("/coffer/healthcheck", this::healthCheck);
+        route.custom("HEAD", ALIAS_PATH, this::processRepoGetHead, null, null);
+        route.get(ALIAS_PATH, this::processRepoGetHead, null);
+        route.post(ALIAS_PATH, this::processRepoSave, null, null);
+        route.put(ALIAS_PATH, this::processRepoSave, null, null);
     }
 
-    private void healthCheck(ServerRequest req, ServerResponse resp) {
-        resp.status(Http.Status.OK_200);
-        resp.send("Ok");
+    private void healthCheck(JettyEmbeddedRequest req, JettyEmbeddedResponse resp) throws Exception {
+        HttpReqHelper.sendString(resp.getResponse(), 200, "text/plain", "Ok");
+        resp.status(200);
     }
-    
-    private void processRepoSave(ServerRequest req, ServerResponse resp) throws Exception {
+
+    private void processRepoSave(JettyEmbeddedRequest req, JettyEmbeddedResponse resp) throws Exception {
         LoginUser lu = authorizeUser(req, resp);
 
         if (lu == null) {
             return;
         }
 
-        String strLoc = req.path().path().replace(ALIAS, "");
+        String strLoc = req.getRequestInfo().getString("fileLoc");
+
+        _log.info("PUT Path: {}", strLoc);
+
         Path fSet = Paths.get(_storePath, strLoc);
 
         String[] sSplitPaths = strLoc.split("/");
 
         if (lu.hasRole(sSplitPaths[1] + "_WRITE")) {
             if (!strLoc.contains(".xml") && Files.exists(fSet)) {
-                resp.status(Http.Status.CONFLICT_409);
-                resp.send("Overwriting Release Not Allowed");
+                HttpReqHelper.sendString(resp.getResponse(), 409, "text/plain", "Overwriting Release Not Allowed");
             } else {
                 if (strLoc.contains("maven-metadata.xml") && Files.exists(fSet)) {
                     Files.delete(fSet);
@@ -110,27 +115,31 @@ public class MvnCofferController implements HttpService {
 
                 Files.createDirectories(fSet.getParent());
 
-                Files.copy(req.content().inputStream(), fSet);
+                Files.copy(req.getRequest().getInputStream(), fSet);
 
-                resp.status(Http.Status.OK_200);
-                resp.send();
+                resp.status(200);
             }
         } else {
-            resp.status(Http.Status.FORBIDDEN_403);
-            resp.send("Forbidden");
+            HttpReqHelper.sendString(resp.getResponse(), 403, "text/plain", "Forbidden");
         }
     }
 
-    private LoginUser authorizeUser(ServerRequest req, ServerResponse resp) {
-        Http.HeaderValue authHdr = req.headers().get(Http.Header.createName("authorization", "Authorization"));
-
-        if (authHdr.value() == null) {
-            resp.status(Http.Status.UNAUTHORIZED_401);
-            resp.send("UnAuthorized");
+    private LoginUser authorizeUser(JettyEmbeddedRequest req, JettyEmbeddedResponse resp) throws Exception {
+        String auth = req.getRequest().getHeader("Authorization");
+        
+        var iterHdr = req.getRequest().getHeaderNames();
+        
+        while (iterHdr.hasMoreElements()) {
+            _log.info("Header: {}", iterHdr.nextElement());
+        }
+        
+        if (auth == null) {
+            HttpReqHelper.sendString(resp.getResponse(), 401, "text/plain", "Unauthorized");
+            
             return null;
         }
 
-        String[] authSplit = authHdr.value().split(" ");
+        String[] authSplit = auth.split(" ");
 
         if ("Basic".equals(authSplit[0])) {
             String sUserPass = new String(Base64.getDecoder().decode(authSplit[1]));
@@ -142,18 +151,15 @@ public class MvnCofferController implements HttpService {
                 if (lu.getPassword().equals(splitUser[1])) {
                     return lu;
                 } else {
-                    resp.status(Http.Status.FORBIDDEN_403);
-                    resp.send("Forbidden");
+                    HttpReqHelper.sendString(resp.getResponse(), 403, "text/plain", "Forbidden");
                     return null;
                 }
             } else {
-                resp.status(Http.Status.FORBIDDEN_403);
-                resp.send("Forbidden");
+                HttpReqHelper.sendString(resp.getResponse(), 403, "text/plain", "Forbidden");
                 return null;
             }
         } else {
-            resp.status(Http.Status.FORBIDDEN_403);
-            resp.send("Forbidden");
+            HttpReqHelper.sendString(resp.getResponse(), 403, "text/plain", "Forbidden");
             return null;
         }
     }
@@ -165,22 +171,25 @@ public class MvnCofferController implements HttpService {
                                               <td>%s</td>
                                            </tr>
                                            """;
-    private void processRepoGetHead(ServerRequest req, ServerResponse resp) {
+
+    private void processRepoGetHead(JettyEmbeddedRequest req, JettyEmbeddedResponse resp) throws Exception {
         _log.info("This is a test");
-        
-        String strLoc = req.path().path().replace(ALIAS, "");
+
+        String strLoc = req.getRequestInfo().getString("fileLoc");
+
+        _log.info("GET Path: {}", strLoc);
 
         // Replace any .. parent tags
         strLoc = strLoc.replace("/..", "");
 
         Path fSet = Paths.get(_storePath, strLoc);
+
         try {
             if (Files.notExists(fSet)) {
                 _log.error("File " + strLoc + " was not found");
-                resp.status(Http.Status.NOT_FOUND_404);
-                resp.send("File " + strLoc + " was not found");
-            } else if (Files.isDirectory(fSet) && !"HEAD".equals(req.prologue().method().text())) {
-                String strFullReq = req.path().path();
+                HttpReqHelper.sendString(resp.getResponse(), 404, "text/plain", "File " + strLoc + " was not found");
+            } else if (Files.isDirectory(fSet) && !"HEAD".equals(req.getRequest().getMethod())) {
+                String strFullReq = req.getRequestInfo().getString("fileLoc");;
 
                 //strFullReq.replace("http:", "https:");
                 if (!strFullReq.endsWith("/")) {
@@ -189,7 +198,7 @@ public class MvnCofferController implements HttpService {
 
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(fSet)) {
                     StringBuilder sb = new StringBuilder();
-                    
+
                     sb.append("<html>");
                     sb.append("<body>");
                     sb.append("<table>");
@@ -208,26 +217,25 @@ public class MvnCofferController implements HttpService {
                     sb.append("</tbody>");
                     sb.append("</body>");
                     sb.append("</html>");
-                    
-                    resp.header("Content-Type", "text/html");
-                    resp.send(sb.toString());
+
+                    HttpReqHelper.sendString(resp.getResponse(), 200, "text/html", sb.toString());
                 }
             } else {
                 String contentType = Files.probeContentType(fSet);
-                
+
                 if (contentType == null) {
                     contentType = "plain/text";
                 }
-                
-                resp.header("Content-Type", contentType);
+
+                resp.getResponse().setHeader("Content-Type", contentType);
                 resp.contentLength(Long.valueOf(Files.size(fSet)).intValue());
 
-                if ("GET".equals(req.prologue().method().text())) {
-                    Files.copy(fSet, resp.outputStream());
-                    
-                    resp.outputStream().close();
-                } else if ("HEAD".equals(req.prologue().method().text())) {
-                    resp.send();
+                if ("GET".equals(req.getRequest().getMethod())) {
+                    try (OutputStream os = resp.getResponse().getOutputStream()) {
+                        Files.copy(fSet, os);
+                    }
+                } else if ("HEAD".equals(req.getRequest().getMethod())) {
+                    // Nothing really to set here
                 }
             }
         } catch (IOException io) {
